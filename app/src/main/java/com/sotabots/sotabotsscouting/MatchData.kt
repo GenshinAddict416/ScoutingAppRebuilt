@@ -14,7 +14,9 @@ data class MatchData(
     val alliance: String,
 
     val autoFuel: Int,
+    val autoAmount: String,
     val teleopFuel: Int,
+    val teleopAmount: String,
 
     val autoClimb: String,
     val endgame: String,

@@ -26,7 +26,29 @@ fun ScoutingForm(
     var matchNumber by remember { mutableStateOf("") }
 
     var autoFuel by remember { mutableStateOf(0f) }
-    var teleopFuel by remember { mutableStateOf(0f) }
+    var teleopFuel by remember { mutableStateOf(0f)}
+
+    var autoFuelAmount by remember { mutableStateOf("None") }
+    var teleopFuelAmount by remember { mutableStateOf("None") }
+
+    val autoFuelOptions = listOf(
+        "None",
+        "1-15",
+        "16-30",
+        "31-45",
+        "46-60",
+        "61-75",
+        "76-90"
+    )
+    val teleopFuelOptions = listOf(
+        "None",
+        "1-15",
+        "16-30",
+        "31-45",
+        "46-60",
+        "61-75",
+        "76-90"
+    )
 
     var autoClimb by remember { mutableStateOf("No") }
     val yesNoOptions = listOf("No", "Yes")
@@ -38,19 +60,15 @@ fun ScoutingForm(
     var activeHub by remember { mutableStateOf("None") }
     val hubOptions = listOf(
         "None",
-        "Blocking Opposite Exits",
-        "Stealing From Opposite Side",
-        "Collecting Balls For Shooting",
-        "Collecting Balls for Outpost",
+        "Collecting Balls For Next Round (offense)",
+        "Defense",
         "Other"
     )
     val actHubOptions = listOf(
         "None",
-        "Shooting using Alliance Zone Fuel",
-        "Shooting using Outpost Fuel",
-        "Shooting Using Neutral Zone Fuel",
+        "Offense",
         "Defense",
-        "Other"
+        "Other (Specify in Comments)"
     )
 
     var fouls by remember { mutableStateOf("None") }
@@ -103,6 +121,13 @@ fun ScoutingForm(
         )
 
         Dropdown(
+            label = "Guess/Estimate: How much fuel was scored in Auto?",
+            options = autoFuelOptions,
+            selected = autoFuelAmount,
+            onSelect = { autoFuelAmount = it }
+        )
+
+        Dropdown(
             label = "Auto Climb",
             options = yesNoOptions,
             selected = autoClimb,
@@ -115,6 +140,13 @@ fun ScoutingForm(
             onValueChange = { teleopFuel = it },
             valueRange = 0f..100f,
             steps = 99
+        )
+
+        Dropdown(
+            label = "Guess/Estimate: How Much Fuel was scored in TeleOp?",
+            options = teleopFuelOptions,
+            selected = teleopFuelAmount,
+            onSelect = { teleopFuelAmount = it }
         )
 
         Dropdown(
@@ -170,7 +202,9 @@ fun ScoutingForm(
                     matchNumber = matchNumber.toInt(),
                     alliance = alliance,
                     autoFuel = autoFuel.toInt(),
+                    autoAmount = autoFuelAmount,
                     teleopFuel = teleopFuel.toInt(),
+                    teleopAmount = teleopFuelAmount,
                     autoClimb = autoClimb,
                     endgame = endgame,
                     fouls = fouls,
@@ -189,7 +223,9 @@ fun ScoutingForm(
                 matchNumber = ""
                 alliance =  "Red"
                 autoFuel = 0f
+                autoFuelAmount = "None"
                 teleopFuel = 0f
+                teleopFuelAmount = "None"
                 autoClimb = "No"
                 inactiveHub = "None"
                 activeHub = "None"

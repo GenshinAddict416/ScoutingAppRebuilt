@@ -11,7 +11,7 @@ object CsvExporter {
         // Build CSV
         val csvBuilder = StringBuilder()
         csvBuilder.append(
-            "Team,Match,Alliance,AutoFuel,TeleopFuel,AutoClimb,Endgame,Fouls,Comments\n"
+            "Team,Match,Alliance,AutoAccuracy,AutoAmount,TeleopAccuracy,TeleopAmount,AutoClimb,Endgame,Fouls,InactiveStrat,ActiveStrat,Comments\n"
         )
 
 
@@ -26,17 +26,20 @@ object CsvExporter {
                         "${match.matchNumber}," +
                         "${match.alliance}," +
                         "${match.autoFuel}," +
+                        "${match.autoAmount}," +
                         "${match.teleopFuel}," +
+                        "${match.teleopAmount},"
                         "${match.autoClimb}," +
                         "${match.endgame}," +
                         "${match.fouls}," +
+                        "${match.activeHub}," +
+                        "${match.inactiveHub}," +
                         "\"$safeComments\""
 
             Log.d("CSV_ROW", row)
             csvBuilder.append("$row\n")
         }
 
-        // ⭐ SAFE: getExternalFilesDir(null) can return null
         val dir: File? = context.getExternalFilesDir(null)
 
         if (dir == null) {
@@ -52,6 +55,8 @@ object CsvExporter {
         /*                                                          ^    */
         Log.d("CSV_EXPORT", "target file = ${file.absolutePath}")
 
+
+        // Creating file and logging it for debugging
         val success = try {
             if (file.exists()) {
                 Log.d("CSV_EXPORT", "Old file exists, deleting")
