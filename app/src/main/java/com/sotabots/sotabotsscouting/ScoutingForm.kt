@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -80,6 +81,14 @@ fun ScoutingForm(
 
     var endgame by remember { mutableStateOf("None") }
     val endgameOptions = listOf("None", "L1", "L2", "L3")
+
+    var win by remember { mutableStateOf(false) }
+
+    var energized by remember { mutableStateOf(false) }
+
+    var supercharged by remember { mutableStateOf(false) }
+
+    var traversal by remember { mutableStateOf(false) }
 
     var comments by remember { mutableStateOf("") }
 
@@ -179,6 +188,41 @@ fun ScoutingForm(
             onSelect = { endgame = it }
         )
 
+        Text("Ranking Points", style = MaterialTheme.typography.titleMedium)
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = win,
+                onCheckedChange = { win = it }
+            )
+            Text("Did they win? (+3 RP)")
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = energized,
+                onCheckedChange = { energized = it }
+            )
+            Text("Did thhey get the Energized RP? (+1 RP)")
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = supercharged,
+                onCheckedChange = { supercharged = it }
+            )
+            Text("Did thhey get the Supercharged RP? (+1 RP)")
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = traversal,
+                onCheckedChange = { traversal = it }
+            )
+            Text("Did thhey get the Traversal RP? (+1 RP)")
+        }
+
+
         OutlinedTextField(
             value = comments,
             onValueChange = { comments = it },
@@ -210,6 +254,10 @@ fun ScoutingForm(
                     fouls = fouls,
                     inactiveHub = inactiveHub,
                     activeHub = activeHub,
+                    win = win,
+                    energized = energized,
+                    supercharged = supercharged,
+                    traversal = traversal,
                     comments = comments
                 )
 

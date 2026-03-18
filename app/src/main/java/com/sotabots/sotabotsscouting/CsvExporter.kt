@@ -11,7 +11,7 @@ object CsvExporter {
         // Build CSV
         val csvBuilder = StringBuilder()
         csvBuilder.append(
-            "Team,Match,Alliance,AutoAccuracy,AutoAmount,TeleopAccuracy,TeleopAmount,AutoClimb,Endgame,Fouls,InactiveStrat,ActiveStrat,Comments\n"
+            "Team,Match,Alliance,AutoAccuracy,AutoAmount,TeleopAccuracy,TeleopAmount,AutoClimb,Endgame,Fouls,ActiveStrat,InactiveStrat,Win,Energized,Supercharged,Traversal,TotalRP,Comments\n"
         )
 
 
@@ -20,6 +20,23 @@ object CsvExporter {
                 .replace("\n", " ")
                 .replace("\r", " ")
                 .replace("\"", "'")
+
+            var rp = 0
+            if (match.win) {
+                rp += 3
+            }
+            if (match.energized) {
+                rp += 1
+            }
+            if (match.supercharged) {
+                rp += 1
+                if (!match.energized) {
+                    rp += 1
+                }
+            }
+            if (match.traversal) {
+                rp += 1
+            }
 
             val row =
                 "${match.teamNumber}," +
@@ -34,6 +51,11 @@ object CsvExporter {
                         "${match.fouls}," +
                         "${match.activeHub}," +
                         "${match.inactiveHub}," +
+                        "${match.win}," +
+                        "${match.energized}," +
+                        "${match.supercharged}," +
+                        "${match.traversal}," +
+                        "$rp," +
                         "\"$safeComments\""
 
             Log.d("CSV_ROW", row)

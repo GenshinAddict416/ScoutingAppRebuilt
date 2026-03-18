@@ -21,10 +21,15 @@ data class MatchData(
     val autoClimb: String,
     val endgame: String,
 
-    val fouls: String, // dropdown: None / Some / A Lot
+    val fouls: String,
 
     val inactiveHub: String,
     val activeHub: String,
+
+    val win: Boolean,
+    val energized: Boolean,
+    val supercharged: Boolean,
+    val traversal: Boolean,
 
     val comments: String
 )
