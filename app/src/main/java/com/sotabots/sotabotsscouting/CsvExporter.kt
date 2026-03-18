@@ -28,7 +28,7 @@ object CsvExporter {
                         "${match.autoFuel}," +
                         "${match.autoAmount}," +
                         "${match.teleopFuel}," +
-                        "${match.teleopAmount},"
+                        "${match.teleopAmount}," +
                         "${match.autoClimb}," +
                         "${match.endgame}," +
                         "${match.fouls}," +
