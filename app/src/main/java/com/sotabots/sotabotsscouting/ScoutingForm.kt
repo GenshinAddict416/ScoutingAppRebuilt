@@ -39,7 +39,9 @@ fun ScoutingForm(
         "31-45",
         "46-60",
         "61-75",
-        "76-90"
+        "76-90",
+        "91-105",
+        "106-120"
     )
     val teleopFuelOptions = listOf(
         "None",
@@ -48,7 +50,9 @@ fun ScoutingForm(
         "31-45",
         "46-60",
         "61-75",
-        "76-90"
+        "76-90",
+        "91-105",
+        "106-120"
     )
 
     var autoClimb by remember { mutableStateOf("No") }
@@ -203,7 +207,7 @@ fun ScoutingForm(
                 checked = energized,
                 onCheckedChange = { energized = it }
             )
-            Text("Did thhey get the Energized RP? (+1 RP)")
+            Text("Did they get the Energized RP? (+1 RP)")
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -211,7 +215,7 @@ fun ScoutingForm(
                 checked = supercharged,
                 onCheckedChange = { supercharged = it }
             )
-            Text("Did thhey get the Supercharged RP? (+1 RP)")
+            Text("Did they get the Supercharged RP? (+1 RP)")
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -219,7 +223,7 @@ fun ScoutingForm(
                 checked = traversal,
                 onCheckedChange = { traversal = it }
             )
-            Text("Did thhey get the Traversal RP? (+1 RP)")
+            Text("Did they get the Traversal RP? (+1 RP)")
         }
 
 
