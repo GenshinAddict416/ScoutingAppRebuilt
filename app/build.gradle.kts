@@ -67,4 +67,8 @@ dependencies {
 
 // Annotation processor (temporary until KSP is added)
     ksp("androidx.room:room-compiler:2.6.1")
+
+    // Camera
+    // Remove the play-services-code-scanner line and add this:
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

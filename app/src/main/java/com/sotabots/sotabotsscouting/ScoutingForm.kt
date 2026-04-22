@@ -1,5 +1,6 @@
 package com.sotabots.sotabotsscouting
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,30 +10,44 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ScoutingForm(
     modifier: Modifier = Modifier,
-    db: AppDatabase,
+    db: AppDatabase?,
     editingMatch: MatchData? = null, // The match being edited (null if new)
     onSaveComplete: () -> Unit       // Callback to return to the list
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-
+    val prefs = remember { context.getSharedPreferences("scouting_prefs", Context.MODE_PRIVATE) }
+    val tabletIndex = prefs.getInt("tablet_index", 1) // Defaults to Red 1
+    val autoAlliance = if (tabletIndex <= 3) "Red" else "Blue"
     // Initialize states: use editingMatch values if they exist, otherwise defaults
     var teamNumber by remember { mutableStateOf(editingMatch?.teamNumber?.toString() ?: "") }
     var matchNumber by remember { mutableStateOf(editingMatch?.matchNumber?.toString() ?: "") }
+    // This watches the Match Number box. If it finds a match, it fills the Team box.
+    LaunchedEffect(matchNumber) {
+        val mNum = matchNumber.toIntOrNull()
+        if (mNum != null && editingMatch == null && db != null) {
+            val scheduledMatch = db.matchDao().getMatchByNumber(mNum)
+            if (scheduledMatch != null) {
+                teamNumber = scheduledMatch.teamNumber.toString()
+            }
+        }
+    }
     var autoFuel by remember { mutableStateOf(editingMatch?.autoFuel?.toFloat() ?: 0f) }
     var teleopFuel by remember { mutableStateOf(editingMatch?.teleopFuel?.toFloat() ?: 0f) }
     var autoFuelAmount by remember { mutableStateOf(editingMatch?.autoAmount ?: "None") }
     var teleopFuelAmount by remember { mutableStateOf(editingMatch?.teleopAmount ?: "None") }
     var autoClimb by remember { mutableStateOf(editingMatch?.autoClimb ?: "No") }
-    var alliance by remember { mutableStateOf(editingMatch?.alliance ?: "Red") }
+    var alliance by remember { mutableStateOf(editingMatch?.alliance ?: autoAlliance) }
     var inactiveHub by remember { mutableStateOf(editingMatch?.inactiveHub ?: "None") }
     var activeHub by remember { mutableStateOf(editingMatch?.activeHub ?: "None") }
     var fouls by remember { mutableStateOf(editingMatch?.fouls ?: "None") }
@@ -65,18 +80,20 @@ fun ScoutingForm(
         )
 
         OutlinedTextField(
+            value = matchNumber,
+            onValueChange = { matchNumber = it },
+            label = { Text("Match Number") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
             value = teamNumber,
             onValueChange = { teamNumber = it },
             label = { Text("Team Number") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
-            value = matchNumber,
-            onValueChange = { matchNumber = it },
-            label = { Text("Match Number") },
-            modifier = Modifier.fillMaxWidth()
-        )
+
 
         Dropdown(label = "Alliance", options = redorblue, selected = alliance, onSelect = { alliance = it })
 
@@ -131,7 +148,6 @@ fun ScoutingForm(
                 }
 
                 val match = MatchData(
-                    id = editingMatch?.id ?: 0, // Reuse ID if editing
                     teamNumber = teamNumber.toInt(),
                     matchNumber = matchNumber.toInt(),
                     alliance = alliance,
@@ -153,9 +169,9 @@ fun ScoutingForm(
 
                 scope.launch {
                     if (editingMatch == null) {
-                        db.matchDao().insert(match)
+                        db?.matchDao()?.insert(match)
                     } else {
-                        db.matchDao().update(match)
+                        db?.matchDao()?.update(match)
                     }
                     onSaveComplete()
                 }
@@ -174,6 +190,12 @@ fun ScoutingForm(
             Text("Cancel / View Matches")
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ScoutingFormPreview() {
+    ScoutingForm(db = null, onSaveComplete = {})
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

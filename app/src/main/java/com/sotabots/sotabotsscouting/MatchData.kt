@@ -3,9 +3,11 @@ package com.sotabots.sotabotsscouting
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "matches")
+@Entity(
+    tableName = "matches",
+    primaryKeys = ["teamNumber", "matchNumber"]
+)
 data class MatchData(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0, // Room uses this to identify unique rows
     val teamNumber: Int,
     val matchNumber: Int,
     val alliance: String,

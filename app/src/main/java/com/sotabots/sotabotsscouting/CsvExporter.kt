@@ -6,16 +6,18 @@ import java.io.File
 
 object CsvExporter {
 
-    const val TABLET = "scouting_export_tablet3.csv"
+    // 1. Helper function to get the dynamic filename based on settings
+    private fun getTabletFileName(context: Context): String {
+        val prefs = context.getSharedPreferences("scouting_prefs", Context.MODE_PRIVATE)
+        val tabletId = prefs.getInt("tablet_index", 1) // Defaults to 1
+        return "scouting_export_tablet_$tabletId.csv"
+    }
 
     fun exportToCsv(context: Context, matches: List<MatchData>) {
-
-        // Build CSV
         val csvBuilder = StringBuilder()
         csvBuilder.append(
             "Team,Match,Alliance,AutoAccuracy,AutoAmount,TeleopAccuracy,TeleopAmount,AutoClimb,Endgame,Fouls,ActiveStrat,InactiveStrat,Win,Energized,Supercharged,Traversal,TotalRP,Comments\n"
         )
-
 
         for (match in matches) {
             val safeComments = match.comments
@@ -24,110 +26,64 @@ object CsvExporter {
                 .replace("\"", "'")
 
             var rp = 0
-            if (match.win) {
-                rp += 3
-            }
-            if (match.energized) {
-                rp += 1
-            }
+            if (match.win) rp += 3
+            if (match.energized) rp += 1
             if (match.supercharged) {
                 rp += 1
-                if (!match.energized) {
-                    rp += 1
-                }
+                if (!match.energized) rp += 1
             }
-            if (match.traversal) {
-                rp += 1
-            }
+            if (match.traversal) rp += 1
 
-            val row =
-                "${match.teamNumber}," +
-                        "${match.matchNumber}," +
-                        "${match.alliance}," +
-                        "${match.autoFuel}," +
-                        "${match.autoAmount}," +
-                        "${match.teleopFuel}," +
-                        "${match.teleopAmount}," +
-                        "${match.autoClimb}," +
-                        "${match.endgame}," +
-                        "${match.fouls}," +
-                        "${match.activeHub}," +
-                        "${match.inactiveHub}," +
-                        "${match.win}," +
-                        "${match.energized}," +
-                        "${match.supercharged}," +
-                        "${match.traversal}," +
-                        "$rp," +
-                        "\"$safeComments\""
+            val row = "${match.teamNumber},${match.matchNumber},${match.alliance}," +
+                    "${match.autoFuel},${match.autoAmount},${match.teleopFuel}," +
+                    "${match.teleopAmount},${match.autoClimb},${match.endgame}," +
+                    "${match.fouls},${match.activeHub},${match.inactiveHub}," +
+                    "${match.win},${match.energized},${match.supercharged}," +
+                    "${match.traversal},$rp,\"$safeComments\""
 
-            Log.d("CSV_ROW", row)
             csvBuilder.append("$row\n")
         }
 
         val dir: File? = context.getExternalFilesDir(null)
+        if (dir == null) return
 
-        if (dir == null) {
-            Log.e("CSV_EXPORT", "ERROR: getExternalFilesDir(null) returned null")
-            return
-        }
+        // 2. USE THE DYNAMIC FILENAME
+        val fileName = getTabletFileName(context)
+        val file = File(dir, fileName)
 
-        Log.d("CSV_EXPORT", "dir path = ${dir.absolutePath}, exists=${dir.exists()}")
-
-
-        // CHANGE THIS IF YOU ARE EDITING THE CODE TO MATCH THE APPROPRIATE TABLET
-        val file = File(dir, TABLET)
-        /*                                                          ^    */
-        Log.d("CSV_EXPORT", "target file = ${file.absolutePath}")
-
-
-        // Creating file and logging it for debugging
-        val success = try {
-            if (file.exists()) {
-                Log.d("CSV_EXPORT", "Old file exists, deleting")
-                file.delete()
-            }
-
+        try {
+            if (file.exists()) file.delete()
             file.outputStream().use { out ->
-                val bytes = csvBuilder.toString().toByteArray()
-                Log.d("CSV_EXPORT", "Writing ${bytes.size} bytes")
-                out.write(bytes)
+                out.write(csvBuilder.toString().toByteArray())
                 out.flush()
             }
-
-            Log.d("CSV_EXPORT", "Write finished, file.exists=${file.exists()}, length=${file.length()}")
-            true
-
+            Log.d("CSV_EXPORT", "Saved to $fileName")
         } catch (e: Exception) {
             Log.e("CSV_EXPORT", "Write failed", e)
-            false
         }
-
-        Log.d("CSV_EXPORT", "Write success=$success")
     }
 
     fun importFromCsv(context: Context): List<MatchData> {
         val dir = context.getExternalFilesDir(null) ?: return emptyList()
-        val file = File(dir, TABLET)
+
+        // 3. USE THE DYNAMIC FILENAME HERE TOO
+        val fileName = getTabletFileName(context)
+        val file = File(dir, fileName)
 
         if (!file.exists()) return emptyList()
 
         val importedMatches = mutableListOf<MatchData>()
-
         try {
             val lines = file.readLines()
-            if (lines.size <= 1) return emptyList() // Only header or empty
+            if (lines.size <= 1) return emptyList()
 
-            // Skip the header (index 0)
             for (i in 1 until lines.size) {
                 val line = lines[i]
                 if (line.isBlank()) continue
-
-                // This regex splits by comma but ignores commas inside quotes
                 val tokens = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)".toRegex())
 
                 if (tokens.size >= 17) {
                     importedMatches.add(MatchData(
-                        id = 0, // Database will generate new IDs
                         teamNumber = tokens[0].toIntOrNull() ?: 0,
                         matchNumber = tokens[1].toIntOrNull() ?: 0,
                         alliance = tokens[2],
@@ -144,7 +100,6 @@ object CsvExporter {
                         energized = tokens[13].toBoolean(),
                         supercharged = tokens[14].toBoolean(),
                         traversal = tokens[15].toBoolean(),
-                        // tokens[16] is the calculated RP, which we don't need for the model
                         comments = tokens.getOrNull(17)?.replace("\"", "") ?: ""
                     ))
                 }
@@ -152,7 +107,6 @@ object CsvExporter {
         } catch (e: Exception) {
             Log.e("CSV_IMPORT", "Restore failed", e)
         }
-
         return importedMatches
     }
 }
