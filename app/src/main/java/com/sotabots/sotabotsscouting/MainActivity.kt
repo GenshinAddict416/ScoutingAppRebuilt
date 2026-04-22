@@ -25,22 +25,38 @@ class MainActivity : ComponentActivity() {
             .fallbackToDestructiveMigration()
             .build()
 
-
         setContent {
             ScoutingApp2026Theme {
+                // track which screen we are on
                 var currentScreen by remember { mutableStateOf("form") }
+                // track if we are editing an existing match or making a new one
+                var matchToEdit by remember { mutableStateOf<MatchData?>(null) }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when (currentScreen) {
                         "form" -> ScoutingForm(
                             modifier = Modifier.padding(innerPadding),
                             db = db,
-                            onViewMatches = { currentScreen = "view" }
+                            editingMatch = matchToEdit,
+                            onSaveComplete = {
+                                // Reset the edit state and go to the list
+                                matchToEdit = null
+                                currentScreen = "view"
+                            }
                         )
 
                         "view" -> ViewMatchesScreen(
                             db = db,
-                            onBack = { currentScreen = "form" }
+                            onBack = {
+                                // Reset edit state when going back manually
+                                matchToEdit = null
+                                currentScreen = "form"
+                            },
+                            onEdit = { match ->
+                                // Set the match to edit and swap to the form screen
+                                matchToEdit = match
+                                currentScreen = "form"
+                            }
                         )
                     }
                 }

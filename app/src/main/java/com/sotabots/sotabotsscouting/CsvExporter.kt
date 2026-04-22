@@ -6,6 +6,8 @@ import java.io.File
 
 object CsvExporter {
 
+    const val TABLET = "scouting_export_tablet3.csv"
+
     fun exportToCsv(context: Context, matches: List<MatchData>) {
 
         // Build CSV
@@ -73,7 +75,7 @@ object CsvExporter {
 
 
         // CHANGE THIS IF YOU ARE EDITING THE CODE TO MATCH THE APPROPRIATE TABLET
-        val file = File(dir, "scouting_export_tablet1.csv")
+        val file = File(dir, TABLET)
         /*                                                          ^    */
         Log.d("CSV_EXPORT", "target file = ${file.absolutePath}")
 
@@ -101,5 +103,56 @@ object CsvExporter {
         }
 
         Log.d("CSV_EXPORT", "Write success=$success")
+    }
+
+    fun importFromCsv(context: Context): List<MatchData> {
+        val dir = context.getExternalFilesDir(null) ?: return emptyList()
+        val file = File(dir, TABLET)
+
+        if (!file.exists()) return emptyList()
+
+        val importedMatches = mutableListOf<MatchData>()
+
+        try {
+            val lines = file.readLines()
+            if (lines.size <= 1) return emptyList() // Only header or empty
+
+            // Skip the header (index 0)
+            for (i in 1 until lines.size) {
+                val line = lines[i]
+                if (line.isBlank()) continue
+
+                // This regex splits by comma but ignores commas inside quotes
+                val tokens = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)".toRegex())
+
+                if (tokens.size >= 17) {
+                    importedMatches.add(MatchData(
+                        id = 0, // Database will generate new IDs
+                        teamNumber = tokens[0].toIntOrNull() ?: 0,
+                        matchNumber = tokens[1].toIntOrNull() ?: 0,
+                        alliance = tokens[2],
+                        autoFuel = tokens[3].toIntOrNull() ?: 0,
+                        autoAmount = tokens[4],
+                        teleopFuel = tokens[5].toIntOrNull() ?: 0,
+                        teleopAmount = tokens[6],
+                        autoClimb = tokens[7],
+                        endgame = tokens[8],
+                        fouls = tokens[9],
+                        activeHub = tokens[10],
+                        inactiveHub = tokens[11],
+                        win = tokens[12].toBoolean(),
+                        energized = tokens[13].toBoolean(),
+                        supercharged = tokens[14].toBoolean(),
+                        traversal = tokens[15].toBoolean(),
+                        // tokens[16] is the calculated RP, which we don't need for the model
+                        comments = tokens.getOrNull(17)?.replace("\"", "") ?: ""
+                    ))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CSV_IMPORT", "Restore failed", e)
+        }
+
+        return importedMatches
     }
 }
