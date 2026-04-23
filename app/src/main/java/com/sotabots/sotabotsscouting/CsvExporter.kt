@@ -6,7 +6,7 @@ import java.io.File
 
 object CsvExporter {
 
-    // 1. Helper function to get the dynamic filename based on settings
+
     private fun getTabletFileName(context: Context): String {
         val prefs = context.getSharedPreferences("scouting_prefs", Context.MODE_PRIVATE)
         val tabletId = prefs.getInt("tablet_index", 1) // Defaults to 1
